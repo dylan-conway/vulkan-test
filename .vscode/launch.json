@@ -1,0 +1,51 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "Build Debug",
+            "program": "${workspaceFolder}/build/Debug/vulkan-test.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/Debug",
+            
+            "windows": {
+                "MIMode": "gdb",
+                "miDebuggerPath": "${env:MINGW_ENV_PATH}\\bin\\gdb.exe",
+                "externalConsole": false,
+            },
+
+            // TODO("Linux launch configuration");
+            // "linux": {
+            //     "MIMode": "gdb"
+            // },
+            
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "Launch Release",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "Build Release",
+            "program": "${workspaceFolder}/build/Release/vulkan-test.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/build/Release",
+
+            "windows": {
+                "externalConsole": false
+            },
+
+            // TODO("Linux launch configuration");
+            // "linux": {
+            //     "MIMode": "gdb"
+            // },
+        },
+    ]
+}
