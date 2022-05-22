@@ -15,7 +15,10 @@ project "vulkan-test"
 
     filter "configurations:Debug"
         defines { "DEBUG" }
+        warnings "Extra"
+        disablewarnings { "unused-parameter" }
         symbols "On"
 
     filter "configurations:Release"
         optimize "On"
+        symbols "Off"
