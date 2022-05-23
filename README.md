@@ -1,5 +1,5 @@
 - Download, extract, and place folder somewhere easy to find (I placed mine at C:\\mingw64) https://sourceforge.net/projects/mingw-w64/
 - Search for "edit the system environment variables" and go: "Environment Variables..." > click "New..." under System variables.
-- Create an environment variable named MINGW_ENV_PATH with the value of where you placed the mingw64 folder.
+- Create an new system environment variable named MINGW_ENV_PATH with the value of where you placed the mingw64 folder.
 - Double click "Path" and add a new entry: %MINGW_ENV_PATH%\bin
 - Download premake5 and place in MINGW_ENV_PATH\bin https://premake.github.io/download/
