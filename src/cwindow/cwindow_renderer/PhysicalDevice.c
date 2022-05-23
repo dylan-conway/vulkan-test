@@ -1,6 +1,5 @@
 #include "cwindow/cwindow_renderer/PhysicalDevice.h"
 #include "cwindow/cwindow_renderer/Instance.h"
-#include "cwindow/cwindow_renderer/Surface.h"
 
 static struct PhysicalDevice* init(struct Instance* instance, struct Surface* surface)
 {
@@ -17,7 +16,7 @@ static struct PhysicalDevice* init(struct Instance* instance, struct Surface* su
         free(physical_devices);
     }
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device->handle, surface->handle, &surface->capabilities);
+    Surface()->update_capabilities(surface, physical_device);
     vkGetPhysicalDeviceProperties(physical_device->handle, &physical_device->properties);
     vkGetPhysicalDeviceMemoryProperties(physical_device->handle, &physical_device->memory_properties);
     vkGetPhysicalDeviceFeatures(physical_device->handle, &physical_device->features);

@@ -9,6 +9,9 @@ static struct Swapchain* init(struct Device* device, struct PhysicalDevice* phys
 {
     struct Swapchain* swapchain = calloc(1, sizeof(struct Swapchain));
 
+    swapchain->recreation_required = false;
+    swapchain->window_resized = false;
+
     swapchain->image_extent = get_swapchain_image_extent(surface->capabilities, surface->window);
     swapchain->image_count = get_swapchain_image_count(surface->capabilities);
     swapchain->image_format = get_swapchain_image_format(physical_device->handle, surface->handle);
@@ -73,9 +76,22 @@ static void destroy(struct Swapchain* swapchain, struct Device* device)
     free(swapchain);
 }
 
+static u32 acquire_next_image(struct Swapchain* swapchain, struct Device* device, struct Semaphore* image_available_semaphore)
+{
+    u32 image_index = 0;
+    VkResult swapchain_status = vkAcquireNextImageKHR(device->handle, swapchain->handle, UINT64_MAX, image_available_semaphore->handle, VK_NULL_HANDLE, &image_index);
+    if (VK_ERROR_OUT_OF_DATE_KHR == swapchain_status)
+    {
+        swapchain->recreation_required = true;
+    }
+
+    return image_index;
+}
+
 static I_Swapchain I_SWAPCHAIN = {
     .init = init,
     .destroy = destroy,
+    .acquire_next_image = acquire_next_image,
 };
 
 const I_Swapchain* Swapchain(void)

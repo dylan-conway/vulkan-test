@@ -60,18 +60,24 @@ static void destroy(struct Device* device)
     free(device);
 }
 
-static void get_device_extensions(dvec_str extensions)
+static void wait(struct Device* device)
 {
-    dvec_append(extensions, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    // gvec_append(extensions, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+    vkDeviceWaitIdle(device->handle);
 }
 
 static I_Device I_DEVICE = {
     .init = init,
     .destroy = destroy,
+    .wait = wait,
 };
 
 const I_Device* Device(void)
 {
     return &I_DEVICE;
+}
+
+static void get_device_extensions(dvec_str extensions)
+{
+    dvec_append(extensions, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    // gvec_append(extensions, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
 }

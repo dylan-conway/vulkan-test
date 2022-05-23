@@ -59,8 +59,14 @@ void cwindow_start(cwindow_info info)
         info.init(&window, &renderer, NULL);
     }
 
+    u64 curr_time = get_counter();
+    u64 prev_time = get_counter();
+
     while (running)
     {
+        prev_time = curr_time;
+        curr_time = get_counter();
+
         SDL_Event event = { 0 };
         while (SDL_PollEvent(&event))
         {
@@ -70,9 +76,20 @@ void cwindow_start(cwindow_info info)
                     running = false;
                     break;
 
-                case SDL_WINDOWEVENT_RESIZED:
-                    SDL_GetWindowSize(sdl_window, &width, &height);
-                    cwindow_renderer_handle_resize();
+                case SDL_WINDOWEVENT:
+                    switch (event.window.event)
+                    {
+                        case SDL_WINDOWEVENT_MINIMIZED:
+                            cwindow_renderer_handle_minimized();
+                            break;
+                        case SDL_WINDOWEVENT_RESTORED:
+                            cwindow_renderer_handle_restored();
+                            break;
+                        case SDL_WINDOWEVENT_RESIZED:
+                            SDL_GetWindowSize(sdl_window, &width, &height);
+                            cwindow_renderer_handle_resized();
+                            break;
+                    }
                     break;
                 
                 case SDL_KEYDOWN:
@@ -84,7 +101,7 @@ void cwindow_start(cwindow_info info)
             }
         }
 
-        info.update(&window, &renderer, NULL, 0);
+        info.update(&window, &renderer, NULL, get_delta2(prev_time, curr_time, SECONDS));
 
         info.render(&window, &renderer, NULL);
     }

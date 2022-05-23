@@ -18,6 +18,7 @@ typedef struct I_Device
 {
     struct Device* (*init)(struct PhysicalDevice* physical_device);
     void (*destroy)(struct Device* device);
+    void (*wait)(struct Device* device);
 } I_Device;
 
 const I_Device* Device(void);

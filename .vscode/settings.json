@@ -9,6 +9,12 @@
         "stdbool.h": "c",
         "string.h": "c",
         "fence.h": "c",
-        "memory_resource": "c"
+        "memory_resource": "c",
+        "cwindow_types.h": "c",
+        "surface.h": "c",
+        "device.h": "c",
+        "semaphore.h": "c",
+        "physicaldevice.h": "c",
+        "dc_utils.h": "c"
     }
 }

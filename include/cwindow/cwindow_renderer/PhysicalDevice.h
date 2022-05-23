@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 #include "Instance.h"
 #include "Surface.h"
+#include "cwindow_renderer_base.h"
 
 struct PhysicalDevice
 {

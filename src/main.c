@@ -24,7 +24,7 @@ void update(cwindow* window, cwindow_renderer* renderer, cwindow_input* input, f
 
 void render(cwindow* window, cwindow_renderer* renderer, cwindow_input* input)
 {
-    // renderer->clear();
+    renderer->clear(CW_MEDIUMPURPLE);
 
     // renderer->set_draw_color(CW_GREEN);
 

@@ -2,12 +2,19 @@
 #define BUFFER_H
 
 #include <vulkan/vulkan.h>
+#include "Device.h"
 
-typedef struct Buffer
+struct Buffer
 {
     VkBuffer handle;
     VkDeviceMemory memory;
-} Buffer;
+    VkDeviceSize size;
+};
+
+typedef struct I_Buffer
+{
+    struct Buffer* (*init)(struct Device* device)
+}
 
 Buffer* buffer_init();
 void buffer_free(Buffer* buffer);

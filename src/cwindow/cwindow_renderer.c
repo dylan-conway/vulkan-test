@@ -15,7 +15,7 @@
 #define METHOD(t, m) t##____##m
 
 void METHOD(cwindow_renderer, present)(void);
-void METHOD(cwindow_renderer, clear)(void);
+void METHOD(cwindow_renderer, clear)(color c);
 
 static struct Instance* instance = NULL;
 static struct Surface* surface = NULL;
@@ -30,6 +30,9 @@ static struct Semaphore** render_finished_semaphores = NULL;
 
 static u32 current_frame = 0;
 static u32 max_frames_in_flight = 2;
+static bool window_minimized = false;
+
+void recreate_swapchain(void);
 
 cwindow_renderer cwindow_renderer_init(void* sdl_window)
 {
@@ -39,9 +42,9 @@ cwindow_renderer cwindow_renderer_init(void* sdl_window)
     surface = Surface()->init(instance, sdl_window);
     physical_device = PhysicalDevice()->init(instance, surface);
     device = Device()->init(physical_device);
+    command_pool = CommandPool()->init(device, physical_device, max_frames_in_flight);
     swapchain = Swapchain()->init(device, physical_device, surface);
     pipeline = Pipeline()->init(device, swapchain);
-    command_pool = CommandPool()->init(device, physical_device, max_frames_in_flight);
 
     image_available_semaphores = malloc(sizeof(struct Semaphore*) * max_frames_in_flight);
     render_finished_semaphores = malloc(sizeof(struct Semaphore*) * max_frames_in_flight);
@@ -84,57 +87,48 @@ void cwindow_renderer_free(void)
     Instance()->destroy(instance);
 }
 
-void cwindow_renderer_handle_resize(void)
+void cwindow_renderer_handle_resized(void)
 {
-
+    swapchain->window_resized = true;
 }
 
-void METHOD(cwindow_renderer, clear)(void)
+void cwindow_renderer_handle_minimized(void)
 {
+    window_minimized = true;
+}
 
+void cwindow_renderer_handle_restored(void)
+{
+    window_minimized = false;
+}
+
+void METHOD(cwindow_renderer, clear)(color c)
+{
+    CommandPool()->set_clear_color(command_pool, c);
 }
 
 void METHOD(cwindow_renderer, present)(void)
 {
-    Fence()->wait(in_flight_fences[current_frame], device);
-    Fence()->reset(in_flight_fences[current_frame], device);
-
-    u32 image_index;
-    vkAcquireNextImageKHR(device->handle, swapchain->handle, UINT64_MAX, image_available_semaphores[current_frame]->handle, VK_NULL_HANDLE, &image_index);
-
-    vkResetCommandBuffer(command_pool->buffers[current_frame], 0);
-    
-    { // Record command buffer
-        VkCommandBuffer command_buffer = command_pool->buffers[current_frame];
-
-        VkCommandBufferBeginInfo command_buffer_begin_info = { 0 };
-        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        // TODO ("silent check")
-        vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
-
-        VkClearValue clear_value = {{{ 0.0f, 0.0f, 0.0f, 1.0f }}};
-
-        VkRenderPassBeginInfo render_pass_begin_info = { 0 };
-        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_begin_info.renderPass = pipeline->render_pass;
-        render_pass_begin_info.framebuffer = pipeline->framebuffers[image_index];
-        render_pass_begin_info.renderArea.extent = swapchain->image_extent;
-        render_pass_begin_info.clearValueCount = 1;
-        render_pass_begin_info.pClearValues = &clear_value;
-
-        vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->handle);
-
-        vkCmdDraw(command_buffer, 3, 1, 0, 0);
-
-        vkCmdEndRenderPass(command_buffer);
-
-        // TODO ("silent check")
-        vkEndCommandBuffer(command_buffer);
+    if (true == window_minimized)
+    {
+        return;
     }
 
+    Fence()->wait(in_flight_fences[current_frame], device);
+
+    u32 image_index = Swapchain()->acquire_next_image(swapchain, device, image_available_semaphores[current_frame]);
+    if (true == swapchain->recreation_required)
+    {
+        swapchain->recreation_required = false;
+        recreate_swapchain();
+        return;
+    }
+
+    Fence()->reset(in_flight_fences[current_frame], device);
+
+    CommandPool()->reset_buffer(command_pool, current_frame);
+    CommandPool()->record_buffer(command_pool, current_frame, image_index, pipeline, swapchain);
+    
     VkPipelineStageFlags wait_stages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
     };
@@ -159,7 +153,24 @@ void METHOD(cwindow_renderer, present)(void)
     present_info.pSwapchains = &swapchain->handle;
     present_info.pImageIndices = &image_index;
 
-    vkQueuePresentKHR(device->present_queue, &present_info);
+    VkResult swapchain_status = vkQueuePresentKHR(device->present_queue, &present_info);
+    if (VK_ERROR_OUT_OF_DATE_KHR == swapchain_status || true == swapchain->window_resized)
+    {
+        swapchain->window_resized = false;
+        recreate_swapchain();
+    }
 
     current_frame = (current_frame + 1) % max_frames_in_flight;
+}
+
+void recreate_swapchain(void)
+{
+    Device()->wait(device);
+
+    Pipeline()->destroy(pipeline, device);
+    Swapchain()->destroy(swapchain, device);
+
+    Surface()->update_capabilities(surface, physical_device);
+    swapchain = Swapchain()->init(device, physical_device, surface);
+    pipeline = Pipeline()->init(device, swapchain);
 }
