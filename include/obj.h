@@ -5,21 +5,21 @@
 #include "cwindow/cwindow.h"
 #include "cwindow/cwindow_renderer.h"
 
-typedef struct Player
+struct Player
 {
     i32 x, y;
     i32 width, height;
-} Player;
+};
 
-typedef struct PlayerImpl
+typedef struct IPlayer
 {
-    Player (*init)(void);
-    void (*free)(Player* player);
-    void (*print)(Player* player);
-    void (*update)(Player* player, cwindow* window, cwindow_input* input, f64 dt);
-    void (*render)(Player* player, cwindow_renderer* renderer);
-} PlayerImpl;
+    struct Player (*init)(void);
+    void (*free)(struct Player* player);
+    void (*print)(struct Player* player);
+    void (*update)(struct Player* player, cwindow* window, cwindow_input* input, f64 dt);
+    void (*render)(struct Player* player, cwindow_renderer* renderer);
+} IPlayer;
 
-PlayerImpl* player_impl(void);
+IPlayer* Player(void);
 
 #endif

@@ -55,7 +55,7 @@ size_t gvec_size(gvec vec);
         GVEC_APPEND_TYPE(VkExtent2D)\
         GVEC_APPEND_TYPE(VkRect2D)\
         GVEC_APPEND_TYPE(VkViewport)\
-        default: gvec_append_error)(vec, value);
+        default: gvec_append_error)(vec, value)
 
 #define GVEC_APPEND_DECL(t) void gvec_append_##t(gvec vec, t value)
 void gvec_append_error(void);
@@ -91,7 +91,7 @@ GVEC_APPEND_DECL(VkViewport);
         GVEC_DATA_TYPE(VkExtent2D)\
         GVEC_DATA_TYPE(VkRect2D)\
         GVEC_DATA_TYPE(VkViewport)\
-        default: gvec_data_error)(vec, data_out);
+        default: gvec_data_error)(vec, data_out)
 
 #define GVEC_DATA_DECL(t) void gvec_data_##t(gvec vec, t** data_out)
 void gvec_data_error(void);

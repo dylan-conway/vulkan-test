@@ -64,6 +64,7 @@ void gvec_free(gvec vec)
     }
     vec->type = gvec_unassigned;
     vec->size = 0;
+    free(vec);
 }
 
 void gvec_print(gvec vec, const char* description)
@@ -81,7 +82,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 i8* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRId8, i, data[i]);
                 }
@@ -99,7 +100,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 i16* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRId16, i, data[i]);
                 }
@@ -117,7 +118,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 i32* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRId32, i, data[i]);
                 }
@@ -135,7 +136,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 i64* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRId64, i, data[i]);
                 }
@@ -153,7 +154,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 u8* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRIu8, i, data[i]);
                 }
@@ -171,7 +172,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 u16* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRIu16, i, data[i]);
                 }
@@ -189,7 +190,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 u32* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRIu32, i, data[i]);
                 }
@@ -207,7 +208,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 u64* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %" PRIu64, i, data[i]);
                 }
@@ -225,7 +226,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 f32* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %f", i, data[i]);
                 }
@@ -243,7 +244,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 f64* data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %f", i, data[i]);
                 }
@@ -261,7 +262,7 @@ void gvec_print(gvec vec, const char* description)
             {
                 char** data = NULL;
                 gvec_data(vec, &data);
-                for (i32 i = 0; i < vec->size; i ++)
+                for (u64 i = 0; i < vec->size; i ++)
                 {
                     INFO_LOG("\t%d: %s", i, data[i]);
                 }
@@ -273,6 +274,10 @@ void gvec_print(gvec vec, const char* description)
             INFO_LOG("%s <gvec_unassigned>:", description);
             INFO_LOG("\tunknown data, should be empty");
             break;
+        }
+        default:
+        {
+            WARN_LOG("PRINT NOT IMPLEMENTED");
         }
     }
 }

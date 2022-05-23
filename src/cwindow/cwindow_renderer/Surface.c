@@ -1,11 +1,23 @@
 #include "cwindow/cwindow_renderer/Surface.h"
 #include "dc_utils.h"
 
+static struct Surface* init(struct Instance* instance, SDL_Window* window);
+static void destroy(struct Surface* surface, struct Instance* instance);
+
+static I_Surface I_SURFACE = {
+    .init = init,
+    .destroy = destroy,
+};
+
+const I_Surface* Surface(void)
+{
+    return &I_SURFACE;
+}
 
 // TODO ("potentially move entire surface into Instance");
-Surface* surface_init(Instance* instance, SDL_Window* window)
+struct Surface* init(struct Instance* instance, SDL_Window* window)
 {
-    Surface* surface = calloc(1, sizeof(Surface));
+    struct Surface* surface = calloc(1, sizeof(struct Surface));
 
     surface->window = window;
 
@@ -17,7 +29,7 @@ Surface* surface_init(Instance* instance, SDL_Window* window)
     return surface;
 }
 
-void surface_free(Surface* surface, Instance* instance)
+void destroy(struct Surface* surface, struct Instance* instance)
 {
     vkDestroySurfaceKHR(instance->handle, surface->handle, NULL);
     free(surface);

@@ -5,14 +5,19 @@
 #include "Device.h"
 #include "PhysicalDevice.h"
 
-typedef struct CommandPool
+struct CommandPool
 {
     VkCommandPool handle;
     VkCommandBuffer* buffers;
     u32 buffers_count;
-} CommandPool;
+};
 
-CommandPool* command_pool_init(Device* device, PhysicalDevice* physical_device, u32 max_frames_in_flight);
-void command_pool_free(CommandPool* command_pool, Device* device);
+typedef struct I_CommandPool
+{
+    struct CommandPool* (*init)(struct Device* device, struct PhysicalDevice* physical_device, u32 framebuffers_count);
+    void (*destroy)(struct CommandPool* command_pool, struct Device* device);
+} I_CommandPool;
+
+const I_CommandPool* CommandPool(void);
 
 #endif

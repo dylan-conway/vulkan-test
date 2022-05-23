@@ -4,6 +4,11 @@
         "type_traits": "c",
         "inttypes.h": "c",
         "pipeline.h": "c",
-        "obj.h": "c"
+        "obj.h": "c",
+        "fvec.h": "c",
+        "stdbool.h": "c",
+        "string.h": "c",
+        "fence.h": "c",
+        "memory_resource": "c"
     }
 }

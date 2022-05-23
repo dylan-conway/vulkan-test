@@ -1,7 +1,7 @@
 #include "cwindow/cwindow_renderer/Shader.h"
 #include "dc_utils.h"
 
-Shader* shader_init(Device* device, shaderc_shader_kind shader_type, const str shader_path, const str entry_point)
+Shader* shader_init(struct Device* device, shaderc_shader_kind shader_type, const str shader_path, const str entry_point)
 {
     Shader* shader = calloc(1, sizeof(Shader));
     shader->entry_point = entry_point;
@@ -49,7 +49,7 @@ Shader* shader_init(Device* device, shaderc_shader_kind shader_type, const str s
     return shader;
 }
 
-void shader_free(Shader* shader, Device* device)
+void shader_free(Shader* shader, struct Device* device)
 {
     vkDestroyShaderModule(device->handle, shader->handle, NULL);
     free(shader);

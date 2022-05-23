@@ -1,4 +1,4 @@
-- Download, extract, and place folder within somewhere easy to find (I placed mine at C:\\mingw64) https://sourceforge.net/projects/mingw-w64/
+- Download, extract, and place folder somewhere easy to find (I placed mine at C:\\mingw64) https://sourceforge.net/projects/mingw-w64/
 - Search for "edit the system environment variables" and go: "Environment Variables..." > click "New..." under System variables.
 - Create an environment variable named MINGW_ENV_PATH with the value of where you placed the mingw64 folder.
 - Double click "Path" and add a new entry: %MINGW_ENV_PATH%\bin

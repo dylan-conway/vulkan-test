@@ -7,7 +7,7 @@
 #include "Surface.h"
 #include "Device.h"
 
-typedef struct Swapchain
+struct Swapchain
 {
     VkSwapchainKHR handle;
     VkImage* images;
@@ -16,9 +16,14 @@ typedef struct Swapchain
     VkPresentModeKHR present_mode;
     VkExtent2D image_extent;
     u32 image_count;
-} Swapchain;
+};
 
-Swapchain* swapchain_init(Instance* instance, Device* device, PhysicalDevice* physical_device, Surface* surface);
-void swapchain_free(Swapchain* swapchain, Device* device);
+typedef struct I_Swapchain
+{
+    struct Swapchain* (*init)(struct Device* device, struct PhysicalDevice* physical_device, struct Surface* surface);
+    void (*destroy)(struct Swapchain* swapchain, struct Device* device);
+} I_Swapchain;
+
+const I_Swapchain* Swapchain(void);
 
 #endif

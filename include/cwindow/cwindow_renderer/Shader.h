@@ -13,7 +13,7 @@ typedef struct Shader
     str entry_point;
 } Shader;
 
-Shader* shader_init(Device* device, shaderc_shader_kind shader_type, const str shader_path, const str entry_point);
-void shader_free(Shader* shader, Device* device);
+Shader* shader_init(struct Device* device, shaderc_shader_kind shader_type, const str shader_path, const str entry_point);
+void shader_free(Shader* shader, struct Device* device);
 
 #endif

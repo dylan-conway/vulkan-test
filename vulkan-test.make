@@ -40,8 +40,8 @@ TARGETDIR = build/Debug
 TARGET = $(TARGETDIR)/vulkan-test.exe
 OBJDIR = obj/Debug
 DEFINES += -DDEBUG
-ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g
-ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g
+ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-function
+ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g -Wall -Wextra -Wno-unused-parameter -Wno-unused-function
 ALL_LDFLAGS += $(LDFLAGS) -L"$(VK_SDK_PATH)/Lib"
 
 else ifeq ($(config),release)
@@ -68,33 +68,41 @@ OBJECTS :=
 GENERATED += $(OBJDIR)/Buffer.o
 GENERATED += $(OBJDIR)/CommandPool.o
 GENERATED += $(OBJDIR)/Device.o
+GENERATED += $(OBJDIR)/Fence.o
 GENERATED += $(OBJDIR)/Instance.o
 GENERATED += $(OBJDIR)/PhysicalDevice.o
 GENERATED += $(OBJDIR)/Pipeline.o
+GENERATED += $(OBJDIR)/Semaphore.o
 GENERATED += $(OBJDIR)/Shader.o
 GENERATED += $(OBJDIR)/Surface.o
 GENERATED += $(OBJDIR)/Swapchain.o
 GENERATED += $(OBJDIR)/cwindow.o
 GENERATED += $(OBJDIR)/cwindow_renderer.o
 GENERATED += $(OBJDIR)/dc_utils.o
+GENERATED += $(OBJDIR)/dvec.o
 GENERATED += $(OBJDIR)/gvec.o
 GENERATED += $(OBJDIR)/main.o
 GENERATED += $(OBJDIR)/obj.o
+GENERATED += $(OBJDIR)/vec.o
 OBJECTS += $(OBJDIR)/Buffer.o
 OBJECTS += $(OBJDIR)/CommandPool.o
 OBJECTS += $(OBJDIR)/Device.o
+OBJECTS += $(OBJDIR)/Fence.o
 OBJECTS += $(OBJDIR)/Instance.o
 OBJECTS += $(OBJDIR)/PhysicalDevice.o
 OBJECTS += $(OBJDIR)/Pipeline.o
+OBJECTS += $(OBJDIR)/Semaphore.o
 OBJECTS += $(OBJDIR)/Shader.o
 OBJECTS += $(OBJDIR)/Surface.o
 OBJECTS += $(OBJDIR)/Swapchain.o
 OBJECTS += $(OBJDIR)/cwindow.o
 OBJECTS += $(OBJDIR)/cwindow_renderer.o
 OBJECTS += $(OBJDIR)/dc_utils.o
+OBJECTS += $(OBJDIR)/dvec.o
 OBJECTS += $(OBJDIR)/gvec.o
 OBJECTS += $(OBJDIR)/main.o
 OBJECTS += $(OBJDIR)/obj.o
+OBJECTS += $(OBJDIR)/vec.o
 
 # Rules
 # #############################################
@@ -173,6 +181,9 @@ $(OBJDIR)/CommandPool.o: src/cwindow/cwindow_renderer/CommandPool.c
 $(OBJDIR)/Device.o: src/cwindow/cwindow_renderer/Device.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Fence.o: src/cwindow/cwindow_renderer/Fence.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Instance.o: src/cwindow/cwindow_renderer/Instance.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -180,6 +191,9 @@ $(OBJDIR)/PhysicalDevice.o: src/cwindow/cwindow_renderer/PhysicalDevice.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Pipeline.o: src/cwindow/cwindow_renderer/Pipeline.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/Semaphore.o: src/cwindow/cwindow_renderer/Semaphore.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Shader.o: src/cwindow/cwindow_renderer/Shader.c
@@ -194,6 +208,9 @@ $(OBJDIR)/Swapchain.o: src/cwindow/cwindow_renderer/Swapchain.c
 $(OBJDIR)/dc_utils.o: src/dc_utils.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/dvec.o: src/dvec.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/gvec.o: src/gvec.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
@@ -201,6 +218,9 @@ $(OBJDIR)/main.o: src/main.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/obj.o: src/obj.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/vec.o: src/vec.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

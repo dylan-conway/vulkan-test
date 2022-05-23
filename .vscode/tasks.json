@@ -7,7 +7,7 @@
             "type": "shell",
             "group": {
                 "kind": "build",
-                "isDefault": false
+                "isDefault": true
             },
             "presentation": {
                 "echo": true,
@@ -32,7 +32,7 @@
             "type": "shell",
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
             "presentation": {
                 "echo": true,

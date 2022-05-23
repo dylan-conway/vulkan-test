@@ -5,8 +5,9 @@
 #include "cwindow/cwindow_renderer/Device.h"
 #include "cwindow/cwindow_renderer/Swapchain.h"
 #include "cwindow/cwindow_renderer/Pipeline.h"
-#include "cwindow/cwindow_renderer/Shader.h"
 #include "cwindow/cwindow_renderer/CommandPool.h"
+#include "cwindow/cwindow_renderer/Fence.h"
+#include "cwindow/cwindow_renderer/Semaphore.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 #include <vulkan/vulkan.h>
@@ -16,50 +17,41 @@
 void METHOD(cwindow_renderer, present)(void);
 void METHOD(cwindow_renderer, clear)(void);
 
-static Instance* instance = NULL;
-static Surface* surface = NULL;
-static PhysicalDevice* physical_device = NULL;
-static Device* device = NULL;
-static Swapchain* swapchain = NULL;
-static Pipeline* pipeline = NULL;
-static CommandPool* command_pool = NULL;
+static struct Instance* instance = NULL;
+static struct Surface* surface = NULL;
+static struct PhysicalDevice* physical_device = NULL;
+static struct Device* device = NULL;
+static struct Swapchain* swapchain = NULL;
+static struct Pipeline* pipeline = NULL;
+static struct CommandPool* command_pool = NULL;
+static struct Fence** in_flight_fences = NULL;
+static struct Semaphore** image_available_semaphores = NULL;
+static struct Semaphore** render_finished_semaphores = NULL;
 
-// TODO
 static u32 current_frame = 0;
 static u32 max_frames_in_flight = 2;
-static VkSemaphore* image_available_semaphores = NULL;
-static VkSemaphore* render_finished_semaphores = NULL;
-static VkFence* in_flight_fences = NULL;
-
-// static 
 
 cwindow_renderer cwindow_renderer_init(void* sdl_window)
 {
-    instance = instance_init(sdl_window, "3d cubes", "cwindow");
-    instance_setup_debug_utils(instance);
+    instance = Instance()->init(sdl_window, "3d cubes", "cwindow");
+    Instance()->setup_debug_utils(instance);
     
-    surface = surface_init(instance, sdl_window);
-    physical_device = physical_device_init(instance, surface);
-    device = device_init(instance, physical_device);
-    swapchain = swapchain_init(instance, device, physical_device, surface);
-    pipeline = pipeline_init(device, swapchain);
+    surface = Surface()->init(instance, sdl_window);
+    physical_device = PhysicalDevice()->init(instance, surface);
+    device = Device()->init(physical_device);
+    swapchain = Swapchain()->init(device, physical_device, surface);
+    pipeline = Pipeline()->init(device, swapchain);
+    command_pool = CommandPool()->init(device, physical_device, max_frames_in_flight);
 
-    image_available_semaphores = malloc(sizeof(VkSemaphore) * max_frames_in_flight);
-    render_finished_semaphores = malloc(sizeof(VkSemaphore) * max_frames_in_flight);
-    in_flight_fences = malloc(sizeof(VkFence) * max_frames_in_flight);
-
-    VkSemaphoreCreateInfo semaphore_ci = { 0 };
-    semaphore_ci.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    VkFenceCreateInfo fence_ci = { 0 };
-    fence_ci.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fence_ci.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    image_available_semaphores = malloc(sizeof(struct Semaphore*) * max_frames_in_flight);
+    render_finished_semaphores = malloc(sizeof(struct Semaphore*) * max_frames_in_flight);
+    in_flight_fences = malloc(sizeof(struct Fence*) * max_frames_in_flight);
 
     for (u32 i = 0; i < max_frames_in_flight; i ++)
     {
-        VK_CHECK(vkCreateSemaphore(device->handle, &semaphore_ci, NULL, &image_available_semaphores[i]));
-        VK_CHECK(vkCreateSemaphore(device->handle, &semaphore_ci, NULL, &render_finished_semaphores[i]));
-        VK_CHECK(vkCreateFence(device->handle, &fence_ci, NULL, &in_flight_fences[i]));
+        image_available_semaphores[i] = Semaphore()->init(device);
+        render_finished_semaphores[i] = Semaphore()->init(device);
+        in_flight_fences[i] = Fence()->init(device);
     }
 
     cwindow_renderer renderer = {
@@ -75,41 +67,26 @@ void cwindow_renderer_free(void)
     vkQueueWaitIdle(device->present_queue);
     for (u32 i = 0; i < max_frames_in_flight; i ++)
     {
-        vkDestroySemaphore(device->handle, image_available_semaphores[i], NULL);
-        vkDestroySemaphore(device->handle, render_finished_semaphores[i], NULL);
-        vkDestroyFence(device->handle, in_flight_fences[i], NULL);
+
+        Semaphore()->destroy(image_available_semaphores[i], device);
+        Semaphore()->destroy(render_finished_semaphores[i], device);
+        Fence()->destroy(in_flight_fences[i], device);
     }
     free(image_available_semaphores);
     free(render_finished_semaphores);
     free(in_flight_fences);
-    command_pool_free(command_pool, device);
-    pipeline_free(pipeline, device);
-    swapchain_free(swapchain, device);
-    device_free(device, instance);
-    physical_device_free(physical_device);
-    surface_free(surface, instance);
-    instance_free(instance);
+    CommandPool()->destroy(command_pool, device);
+    Pipeline()->destroy(pipeline, device);
+    Swapchain()->destroy(swapchain, device);
+    Device()->destroy(device);
+    PhysicalDevice()->destroy(physical_device);
+    Surface()->destroy(surface, instance);
+    Instance()->destroy(instance);
 }
 
 void cwindow_renderer_handle_resize(void)
 {
-    // vkQueueWaitIdle(device->present_queue);
-    // vkFreeCommandBuffers(device->handle, command_pool, max_frames_in_flight, command_buffers);
-    // free(command_buffers);
-    // for (u32 i = 0; i < max_frames_in_flight; i ++)
-    // {
-    //     vkDestroySemaphore(device->handle, image_available_semaphores[i], NULL);
-    //     vkDestroySemaphore(device->handle, render_finished_semaphores[i], NULL);
-    //     vkDestroyFence(device->handle, in_flight_fences[i], NULL);
-    // }
-    // free(image_available_semaphores);
-    // free(render_finished_semaphores);
-    // free(in_flight_fences);
-    // vkDestroyCommandPool(device->handle, command_pool, NULL);
-    // for (u32 i = 0; i < swapchain->image_count; i ++)
-    // {
-    //     vkDestroyFramebuffer(device->handle, framebuffers[i], NULL);
-    // }
+
 }
 
 void METHOD(cwindow_renderer, clear)(void)
@@ -119,11 +96,11 @@ void METHOD(cwindow_renderer, clear)(void)
 
 void METHOD(cwindow_renderer, present)(void)
 {
-    vkWaitForFences(device->handle, 1, &in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
-    vkResetFences(device->handle, 1, &in_flight_fences[current_frame]);
+    Fence()->wait(in_flight_fences[current_frame], device);
+    Fence()->reset(in_flight_fences[current_frame], device);
 
     u32 image_index;
-    vkAcquireNextImageKHR(device->handle, swapchain->handle, UINT64_MAX, image_available_semaphores[current_frame], VK_NULL_HANDLE, &image_index);
+    vkAcquireNextImageKHR(device->handle, swapchain->handle, UINT64_MAX, image_available_semaphores[current_frame]->handle, VK_NULL_HANDLE, &image_index);
 
     vkResetCommandBuffer(command_pool->buffers[current_frame], 0);
     
@@ -165,19 +142,19 @@ void METHOD(cwindow_renderer, present)(void)
     VkSubmitInfo submit_info = { 0 };
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &image_available_semaphores[current_frame];
+    submit_info.pWaitSemaphores = &image_available_semaphores[current_frame]->handle;
     submit_info.pWaitDstStageMask = wait_stages;
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &command_pool->buffers[current_frame];
     submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &render_finished_semaphores[current_frame];
+    submit_info.pSignalSemaphores = &render_finished_semaphores[current_frame]->handle;
 
-    vkQueueSubmit(device->graphics_queue, 1, &submit_info, in_flight_fences[current_frame]);
+    vkQueueSubmit(device->graphics_queue, 1, &submit_info, in_flight_fences[current_frame]->handle);
 
     VkPresentInfoKHR present_info = { 0 };
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     present_info.waitSemaphoreCount = 1;
-    present_info.pWaitSemaphores = &render_finished_semaphores[current_frame];
+    present_info.pWaitSemaphores = &render_finished_semaphores[current_frame]->handle;
     present_info.swapchainCount = 1;
     present_info.pSwapchains = &swapchain->handle;
     present_info.pImageIndices = &image_index;

@@ -1,48 +1,46 @@
 #include "obj.h"
 
-#define METHOD(t, m) t##____##m
+static struct Player Player___init(void);
+static void Player___free(struct Player* player);
+static void Player___print(struct Player* player);
+static void Player___update(struct Player* player, cwindow* window, cwindow_input* input, f64 dt);
+static void Player___render(struct Player* player, cwindow_renderer* renderer);
 
-Player METHOD(Player, init)(void);
-void METHOD(Player, free)(Player* player);
-void METHOD(Player, print)(Player* player);
-void METHOD(Player, update)(Player* player, cwindow* window, cwindow_input* input, f64 dt);
-void METHOD(Player, render)(Player* player, cwindow_renderer* renderer);
-
-static PlayerImpl PLAYER_IMPL = {
-    .init = METHOD(Player, init),
-    .free = METHOD(Player, free),
-    .print = METHOD(Player, print),
-    .update = METHOD(Player, update),
-    .render = METHOD(Player, render),
+static IPlayer I_PLAYER = {
+    .init = Player___init,
+    .free = Player___free,
+    .print = Player___print,
+    .update = Player___update,
+    .render = Player___render,
 };
 
-PlayerImpl* player_impl(void)
+IPlayer* Player(void)
 {
-    return &PLAYER_IMPL;
+    return &I_PLAYER;
 }
 
-Player METHOD(Player, init)(void)
+struct Player Player___init(void)
 {
-    Player p = { 0 };
+    struct Player p = { 0 };
     return p;
 }
 
-void METHOD(Player, free)(Player* player)
+void Player___free(struct Player* player)
 {
 
 }
 
-void METHOD(Player, print)(Player* player)
+void Player___print(struct Player* player)
 {
 
 }
 
-void METHOD(Player, update)(Player* player, cwindow* window, cwindow_input* input, f64 dt)
+void Player___update(struct Player* player, cwindow* window, cwindow_input* input, f64 dt)
 {
 
 }
 
-void METHOD(Player, render)(Player* player, cwindow_renderer* renderer)
+void Player___render(struct Player* player, cwindow_renderer* renderer)
 {
 
 }

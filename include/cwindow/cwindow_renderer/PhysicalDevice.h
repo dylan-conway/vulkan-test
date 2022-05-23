@@ -5,7 +5,7 @@
 #include "Instance.h"
 #include "Surface.h"
 
-typedef struct PhysicalDevice
+struct PhysicalDevice
 {
     VkPhysicalDevice handle;
     VkPhysicalDeviceProperties properties;
@@ -13,9 +13,14 @@ typedef struct PhysicalDevice
     VkPhysicalDeviceFeatures features;
     u32 graphics_queue_index;
     u32 present_queue_index;
-} PhysicalDevice;
+};
 
-PhysicalDevice* physical_device_init(Instance* instance, Surface* surface);
-void physical_device_free(PhysicalDevice* physical_device);
+typedef struct I_PhysicalDevice
+{
+    struct PhysicalDevice* (*init)(struct Instance* instance, struct Surface* surface);
+    void (*destroy)(struct PhysicalDevice* physical_device);
+} I_PhysicalDevice;
+
+const I_PhysicalDevice* PhysicalDevice(void);
 
 #endif

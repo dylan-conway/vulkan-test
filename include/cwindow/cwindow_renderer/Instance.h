@@ -4,21 +4,26 @@
 #include <vulkan/vulkan.h>
 #include <SDL2/SDL.h>
 #include "dc_utils.h"
-#include "gvec.h"
+#include "dvec.h"
 
-typedef struct Instance
+struct Instance
 {
     VkInstance handle;
-    gvec layers;
-    gvec extensions;
+    dvec_str layers;
+    dvec_str extensions;
 
     #ifdef DEBUG
     VkDebugUtilsMessengerEXT debug_utils_messenger;
     #endif
-} Instance;
+};
 
-Instance* instance_init(SDL_Window* window, const char* app_name, const char* engine_name);
-void instance_free(Instance* instance);
-void instance_setup_debug_utils(Instance* instance);
+typedef struct I_Instance
+{
+    struct Instance* (*init)(SDL_Window* window, const char* app_name, const char* engine_name);
+    void (*destroy)(struct Instance* instance);
+    void (*setup_debug_utils)(struct Instance* instance);
+} I_Instance;
+
+const I_Instance* Instance(void);
 
 #endif

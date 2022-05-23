@@ -5,9 +5,9 @@ VkSurfaceFormatKHR get_swapchain_image_format(VkPhysicalDevice physical_device, 
 VkPresentModeKHR get_swapchain_image_present_mode(VkPhysicalDevice physical_device, VkSurfaceKHR surface);
 u32 get_swapchain_image_count(VkSurfaceCapabilitiesKHR capabilities);
 
-Swapchain* swapchain_init(Instance* instance, Device* device, PhysicalDevice* physical_device, Surface* surface)
+static struct Swapchain* init(struct Device* device, struct PhysicalDevice* physical_device, struct Surface* surface)
 {
-    Swapchain* swapchain = calloc(1, sizeof(Swapchain));
+    struct Swapchain* swapchain = calloc(1, sizeof(struct Swapchain));
 
     swapchain->image_extent = get_swapchain_image_extent(surface->capabilities, surface->window);
     swapchain->image_count = get_swapchain_image_count(surface->capabilities);
@@ -61,7 +61,7 @@ Swapchain* swapchain_init(Instance* instance, Device* device, PhysicalDevice* ph
     return swapchain;
 }
 
-void swapchain_free(Swapchain* swapchain, Device* device)
+static void destroy(struct Swapchain* swapchain, struct Device* device)
 {
     for (u32 i = 0; i < swapchain->image_count; i ++)
     {
@@ -72,6 +72,17 @@ void swapchain_free(Swapchain* swapchain, Device* device)
     vkDestroySwapchainKHR(device->handle, swapchain->handle, NULL);
     free(swapchain);
 }
+
+static I_Swapchain I_SWAPCHAIN = {
+    .init = init,
+    .destroy = destroy,
+};
+
+const I_Swapchain* Swapchain(void)
+{
+    return &I_SWAPCHAIN;
+}
+
 
 VkExtent2D get_swapchain_image_extent(VkSurfaceCapabilitiesKHR capabilities, SDL_Window* window)
 {
@@ -93,6 +104,8 @@ VkExtent2D get_swapchain_image_extent(VkSurfaceCapabilitiesKHR capabilities, SDL
         extent.width = (u32)width < min_width ? min_width : (u32)width > max_width ? max_width : (u32)width;
         extent.height = (u32)height < min_height ? min_height : (u32)height > max_height ? max_height : (u32)height;
     }
+
+    return extent;
 }
 
 VkSurfaceFormatKHR get_swapchain_image_format(VkPhysicalDevice physical_device, VkSurfaceKHR surface)

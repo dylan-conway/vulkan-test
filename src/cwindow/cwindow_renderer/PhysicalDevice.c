@@ -2,9 +2,9 @@
 #include "cwindow/cwindow_renderer/Instance.h"
 #include "cwindow/cwindow_renderer/Surface.h"
 
-PhysicalDevice* physical_device_init(Instance* instance, Surface* surface)
+static struct PhysicalDevice* init(struct Instance* instance, struct Surface* surface)
 {
-    PhysicalDevice* physical_device = calloc(1, sizeof(PhysicalDevice));
+    struct PhysicalDevice* physical_device = calloc(1, sizeof(struct PhysicalDevice));
 
     {
         u32 count = 0;
@@ -46,7 +46,17 @@ PhysicalDevice* physical_device_init(Instance* instance, Surface* surface)
     return physical_device;
 }
 
-void physical_device_free(PhysicalDevice* physical_device)
+static void destroy(struct PhysicalDevice* physical_device)
 {
     free(physical_device);
+}
+
+static I_PhysicalDevice I_PHYSICAL_DEVICE = {
+    .init = init,
+    .destroy = destroy,
+};
+
+const I_PhysicalDevice* PhysicalDevice(void)
+{
+    return &I_PHYSICAL_DEVICE;
 }

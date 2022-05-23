@@ -20,19 +20,30 @@ VkDebugUtilsMessengerCreateInfoEXT debug_utils_messenger_ci = {
 };
 #endif
 
-/////////////////// private methods begin
+static struct Instance* init(SDL_Window* window, const char* app_name, const char* engine_name);
+static void destroy(struct Instance* instance);
+static void setup_debug_utils(struct Instance* instance);
 
-void get_instance_layers(Instance* instance);
-void get_instance_extensions(Instance* instance, SDL_Window* window);
+static I_Instance I_INSTANCE = {
+    .init = init,
+    .destroy = destroy,
+    .setup_debug_utils = setup_debug_utils,
+};
 
-/////////////////// private methods end
-
-Instance* instance_init(SDL_Window* window, const char* app_name, const char* engine_name)
+const I_Instance* Instance(void)
 {
-    Instance* instance = calloc(1, sizeof(Instance));
+    return &I_INSTANCE;
+}
 
-    instance->layers = gvec_init(gvec_str);
-    instance->extensions = gvec_init(gvec_str);
+void get_instance_layers(struct Instance* instance);
+void get_instance_extensions(struct Instance* instance, SDL_Window* window);
+
+struct Instance* init(SDL_Window* window, const char* app_name, const char* engine_name)
+{
+    struct Instance* instance = calloc(1, sizeof(struct Instance));
+
+    instance->layers = dvec_init(str);
+    instance->extensions = dvec_init(str);
     get_instance_layers(instance);
     get_instance_extensions(instance, window);
 
@@ -44,18 +55,13 @@ Instance* instance_init(SDL_Window* window, const char* app_name, const char* en
     app_info.pEngineName = engine_name;
     app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 
-    char** layer_names = NULL;
-    gvec_data(instance->layers, &layer_names);
-    char** extension_names = NULL;
-    gvec_data(instance->extensions, &extension_names);
-
     VkInstanceCreateInfo instance_ci = { 0 };
     instance_ci.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance_ci.pApplicationInfo = &app_info;
-    instance_ci.enabledLayerCount = gvec_size(instance->layers);
-    instance_ci.ppEnabledLayerNames = (const char* const*)layer_names;
-    instance_ci.enabledExtensionCount = gvec_size(instance->extensions);
-    instance_ci.ppEnabledExtensionNames = (const char* const*)extension_names;
+    instance_ci.enabledLayerCount = dvec_size(instance->layers);
+    instance_ci.ppEnabledLayerNames = (const char* const*)dvec_data(instance->layers);
+    instance_ci.enabledExtensionCount = dvec_size(instance->extensions);
+    instance_ci.ppEnabledExtensionNames = (const char* const*)dvec_data(instance->extensions);
 
     #ifdef DEBUG
     instance_ci.pNext = &debug_utils_messenger_ci;
@@ -63,16 +69,25 @@ Instance* instance_init(SDL_Window* window, const char* app_name, const char* en
 
     VK_CHECK(vkCreateInstance(&instance_ci, NULL, &instance->handle));
 
-    gvec_print(instance->layers, "Enabled Vulkan instance layers");
-    gvec_print(instance->extensions, "Enabled Vulkan instance extensions");
+    INFO_LOG("Enabled Vulkan instance layers <dvec_str>:");
+    for (u64 i = 0; i < dvec_size(instance->layers); i ++)
+    {
+        INFO_LOG("    %zu: %s", i, dvec_data(instance->layers)[i]);
+    }
+
+    INFO_LOG("Enabled Vulkan instance extensions <dvec_str>:");
+    for (u64 i = 0; i < dvec_size(instance->extensions); i ++)
+    {
+        INFO_LOG("    %zu: %s", i, dvec_data(instance->extensions)[i]);
+    }
 
     return instance;
 }
 
-void instance_free(Instance* instance)
+void destroy(struct Instance* instance)
 {
-    gvec_free(instance->layers);
-    gvec_free(instance->extensions);
+    dvec_free(instance->layers);
+    dvec_free(instance->extensions);
     #ifdef DEBUG
     _vkDestroyDebugUtilsMessengerEXT(instance->handle, instance->debug_utils_messenger, NULL);
     #endif
@@ -80,7 +95,7 @@ void instance_free(Instance* instance)
     free(instance);
 }
 
-void instance_setup_debug_utils(Instance* instance)
+void setup_debug_utils(struct Instance* instance)
 {
     #ifdef DEBUG
     _vkCreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance->handle, "vkCreateDebugUtilsMessengerEXT");
@@ -91,14 +106,14 @@ void instance_setup_debug_utils(Instance* instance)
 
 /////////////////// private methods begin
 
-void get_instance_layers(Instance* instance)
+void get_instance_layers(struct Instance* instance)
 {
     #ifdef DEBUG
-    gvec_append(instance->layers, "VK_LAYER_KHRONOS_validation");
+    dvec_append(instance->layers, "VK_LAYER_KHRONOS_validation");
     #endif
 }
 
-void get_instance_extensions(Instance* instance, SDL_Window* window)
+void get_instance_extensions(struct Instance* instance, SDL_Window* window)
 {
     u32 count = 0;
     if (SDL_FALSE == SDL_Vulkan_GetInstanceExtensions(window, &count, NULL))
@@ -113,11 +128,11 @@ void get_instance_extensions(Instance* instance, SDL_Window* window)
 
     for (u32 i = 0; i < count; i ++)
     {
-        gvec_append(instance->extensions, (char*)required_instance_extensions[i]);
+        dvec_append(instance->extensions, (char*)required_instance_extensions[i]);
     }
 
     #ifdef DEBUG
-    gvec_append(instance->extensions, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    dvec_append(instance->extensions, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     #endif
 
     free(required_instance_extensions);
@@ -141,6 +156,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_callback(VkDebugUtilsMessageSeverityF
 
     // TODO ("pretty print validation output, maybe just for validation errors because of the format")
     fprintf(stdout, "%s  %sVK Validation [%c:%c]" TERM_RESET_COLOR " >>>  %s\n", timestamp, message_color, severity_tag, type_tag, pCallbackData->pMessage);
+
+    if (!pUserData) pUserData = NULL;
 
     return VK_FALSE;
 }

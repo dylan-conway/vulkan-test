@@ -1,8 +1,8 @@
 #include "cwindow/cwindow_renderer/CommandPool.h"
 
-CommandPool* command_pool_init(Device* device, PhysicalDevice* physical_device, u32 max_frames_in_flight)
+static struct CommandPool* init(struct Device* device, struct PhysicalDevice* physical_device, u32 framebuffers_count)
 {
-    CommandPool* command_pool = calloc(1, sizeof(CommandPool));
+    struct CommandPool* command_pool = calloc(1, sizeof(struct CommandPool));
 
     VkCommandPoolCreateInfo command_pool_ci = { 0 };
     command_pool_ci.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -11,7 +11,7 @@ CommandPool* command_pool_init(Device* device, PhysicalDevice* physical_device, 
 
     VK_CHECK(vkCreateCommandPool(device->handle, &command_pool_ci, NULL, &command_pool->handle));
 
-    command_pool->buffers_count = max_frames_in_flight;
+    command_pool->buffers_count = framebuffers_count;
     command_pool->buffers = malloc(sizeof(VkCommandBuffer) * command_pool->buffers_count);
     
     VkCommandBufferAllocateInfo command_buffer_allocate_info = { 0 };
@@ -25,9 +25,20 @@ CommandPool* command_pool_init(Device* device, PhysicalDevice* physical_device, 
     return command_pool;
 }
 
-void command_pool_free(CommandPool* command_pool, Device* device)
+static void destroy(struct CommandPool* command_pool, struct Device* device)
 {
     vkFreeCommandBuffers(device->handle, command_pool->handle, command_pool->buffers_count, command_pool->buffers);
+    vkDestroyCommandPool(device->handle, command_pool->handle, NULL);
     free(command_pool->buffers);
     free(command_pool);
+}
+
+static I_CommandPool I_COMMAND_POOL = {
+    .init = init,
+    .destroy = destroy,
+};
+
+const I_CommandPool* CommandPool(void)
+{
+    return &I_COMMAND_POOL;
 }

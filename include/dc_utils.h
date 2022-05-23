@@ -77,29 +77,4 @@ f64 get_delta(u64 start_time, enum TIME_UNIT tu);
 f64 get_delta2(u64 start_time, u64 end_time, enum TIME_UNIT tu);
 char* read_file(const char* path, size_t* out_size);
 
-typedef struct str_vector
-{
-    char** data;
-    size_t size;
-} str_vector;
-
-str_vector str_vector_init(void);
-void str_vector_free(str_vector* v);
-void str_vector_append(str_vector* v, char* str);
-void str_vector_print(str_vector* v, const char* description);
-
-
-typedef struct str_llist_node
-{
-    struct str_llist_node* next;
-    char* value;
-} str_llist_node;
-
-typedef struct str_llist
-{
-    struct str_llist_node* head;
-    struct str_llist_node* tail;
-    size_t size;
-} str_llist;
-
 #endif

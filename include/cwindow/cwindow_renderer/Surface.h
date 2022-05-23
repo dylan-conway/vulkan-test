@@ -5,14 +5,19 @@
 #include <SDL2/SDL_vulkan.h>
 #include "Instance.h"
 
-typedef struct Surface
+struct Surface
 {
     VkSurfaceKHR handle;
     SDL_Window* window;
     VkSurfaceCapabilitiesKHR capabilities;
-} Surface;
+};
 
-Surface* surface_init(Instance* instance, SDL_Window* window);
-void surface_free(Surface* surface, Instance* instance);
+typedef struct I_Surface
+{
+    struct Surface* (*init)(struct Instance* instance, SDL_Window* window);
+    void (*destroy)(struct Surface* surface, struct Instance* instance);
+} I_Surface;
+
+const I_Surface* Surface(void);
 
 #endif

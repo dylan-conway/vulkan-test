@@ -1,9 +1,9 @@
 #include "cwindow/cwindow_renderer/Pipeline.h"
 #include "cwindow/cwindow_renderer/Shader.h"
 
-Pipeline* pipeline_init(Device* device, Swapchain* swapchain)
+static struct Pipeline* init(struct Device* device, struct Swapchain* swapchain)
 {
-    Pipeline* pipeline = calloc(1, sizeof(Pipeline));
+    struct Pipeline* pipeline = calloc(1, sizeof(struct Pipeline));
 
     VkAttachmentDescription color_attachment = { 0 };
     color_attachment.format = swapchain->image_format.format;
@@ -175,7 +175,7 @@ Pipeline* pipeline_init(Device* device, Swapchain* swapchain)
     return pipeline;
 }
 
-void pipeline_free(Pipeline* pipeline, Device* device)
+static void destroy(struct Pipeline* pipeline, struct Device* device)
 {
     for (u32 i = 0; i < pipeline->framebuffers_count; i ++)
     {
@@ -186,4 +186,14 @@ void pipeline_free(Pipeline* pipeline, Device* device)
     vkDestroyRenderPass(device->handle, pipeline->render_pass, NULL);
     vkDestroyPipeline(device->handle, pipeline->handle, NULL);
     free(pipeline);
+}
+
+static I_Pipeline I_PIPELINE = {
+    .init = init,
+    .destroy = destroy,
+};
+
+const I_Pipeline* Pipeline(void)
+{
+    return &I_PIPELINE;
 }

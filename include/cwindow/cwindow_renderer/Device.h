@@ -4,16 +4,22 @@
 #include <vulkan/vulkan.h>
 #include "cwindow/cwindow_renderer/Instance.h"
 #include "cwindow/cwindow_renderer/PhysicalDevice.h"
+#include "dvec.h"
 
-typedef struct Device
+struct Device
 {
     VkDevice handle;
     VkQueue graphics_queue;
     VkQueue present_queue;
-    gvec extensions;
-} Device;
+    dvec_str extensions;
+};
 
-Device* device_init(Instance* instance, PhysicalDevice* physical_device);
-void device_free(Device* device, Instance* instance);
+typedef struct I_Device
+{
+    struct Device* (*init)(struct PhysicalDevice* physical_device);
+    void (*destroy)(struct Device* device);
+} I_Device;
+
+const I_Device* Device(void);
 
 #endif
